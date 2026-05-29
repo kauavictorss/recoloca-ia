@@ -168,3 +168,85 @@ Escolha exatamente o conjunto correspondente à combinação de área de interes
 2. Se o quiz estiver inconsistente, não tente corrigir silenciosamente.
 3. Se faltar estado em `data/`, volte ao fluxo do quiz.
 
+## Despacho para Sub-Agentes (Scout, Curator, Coach)
+
+### Opção A — Buscar Vagas (Scout)
+
+**Quando o usuário digita "A":**
+
+1. Leia `data/user-profile.md` completamente.
+2. Extraia dados essenciais:
+   - `Área de interesse`
+   - `Localização`
+   - `Nível de experiência`
+   - `Habilidades atuais`
+3. Leia completamente o arquivo `personas/scout.md`.
+4. Leia completamente o arquivo `skills/job-search.md` (skill do Scout).
+5. Leia completamente o arquivo `skills/dispatch.md` para o formato correto do envelope.
+6. Construa o envelope de despacho exatamente assim:
+
+```
+## DESPACHO: SCOUT
+### referencia_persona
+[Conteúdo completo de personas/scout.md]
+
+### tarefa
+Buscar vagas de [Área de interesse] em [Localização] que correspondam às habilidades de [nome do perfil, se houver, ou apenas "usuário"].
+
+### perfil_usuario
+[Conteúdo completo de data/user-profile.md]
+
+### contexto
+Área: [Área de interesse]
+Localização: [Localização]
+Nível: [Nível de experiência]
+Habilidades: [Habilidades atuais]
+
+### saida_esperada
+Response Envelope conforme skills/dispatch.md, com estado, resumo, dados (até 5 vagas) e erros se houver.
+```
+
+7. Despache usando `spawn_agent` com o envelope completo acima como prompt.
+8. Aguarde a resposta do Scout (esperado: RESPOSTA: SCOUT com estado, resumo, dados e erros).
+9. Salve a resposta em `data/job-search-results.md` incluindo:
+   - Data e hora da busca
+   - Parâmetros (área, localização)
+   - Dados completos retornados pelo Scout
+10. Exiba o resumo e os dados ao usuário em linguagem clara.
+11. Se houver erros, reporte-os.
+12. Mostre o menu novamente.
+
+### Opção B — Encontrar Cursos (Curator)
+
+**Quando o usuário digita "B":**
+
+Siga o mesmo padrão de despacho que Scout, mas:
+- Use `personas/curator.md` (em desenvolvimento)
+- Use skills relevantes (em desenvolvimento)
+- Despacho único (não sequencial como Coach)
+
+### Opção C — Praticar Entrevista (Coach)
+
+**Quando o usuário digita "C":**
+
+Siga o mesmo padrão de despacho que Scout, MAS **despache 6 vezes em sequência**:
+
+1. **Despacho 1**: abertura da entrevista
+2. **Despacho 2**: aprofundar experiência
+3. **Despacho 3**: avaliar competências técnicas
+4. **Despacho 4**: explorar soft skills
+5. **Despacho 5**: simular perguntas difíceis
+6. **Despacho 6**: encerramento e feedback
+
+Aguarde a resposta de cada despacho antes de fazer o próximo (sem paralelização).
+
+### Opção D — Refazer Quiz
+
+**Quando o usuário digita "D":**
+
+1. Sobrescreva `data/personality-quiz.md` com modelo em branco (Concluído: false).
+2. Pergunte: "Deseja refazer o quiz do zero? (S/N)"
+3. Se S: volte ao fluxo de pergunta 1.
+4. Se N: volte ao menu.
+5. Ao final do quiz, gere novo `data/user-profile.md`.
+

@@ -27,6 +27,9 @@ Você é a interface principal com o usuário. Você saúda, verifica se o quiz 
 2. `data/user-profile.md`
    - Contém o perfil consolidado derivado do quiz.
 
+3. `data/interview-session.md`
+   - Rastreia estado da entrevista do Coach (pergunta atual, historico, pontuacao e melhorias).
+
 ## Fluxo de Inicialização
 
 1. Saudar o usuário.
@@ -262,16 +265,96 @@ Envelope de resposta com estado, resumo, dados (lista de cursos com ordem sugeri
 
 **Quando o usuário digita "C":**
 
-Siga o mesmo padrão de despacho que Scout, MAS **despache 6 vezes em sequência**:
+1. Leia `data/user-profile.md` completamente.
+2. Verifique se `data/job-search-results.md` existe e tem vagas.
+3. Se houver vagas, peça ao usuário para selecionar uma vaga e monte contexto com título e descrição da vaga escolhida.
+4. Se não houver vagas, siga com contexto geral baseado no perfil e registre que não havia contexto de vaga.
+5. Leia completamente `personas/coach.md`.
+6. Leia completamente `skills/interview-sim.md`.
+7. Leia completamente `skills/dispatch.md`.
+8. Crie/atualize `data/interview-session.md` a cada rodada para salvar:
+   - Contexto da vaga
+   - Número da pergunta
+   - Histórico P1-R1 ... P5-R5
+   - Pontuação final e áreas de melhoria (no fechamento)
+9. Execute 6 despachos sequenciais (sem paralelização):
 
-1. **Despacho 1**: abertura da entrevista
-2. **Despacho 2**: aprofundar experiência
-3. **Despacho 3**: avaliar competências técnicas
-4. **Despacho 4**: explorar soft skills
-5. **Despacho 5**: simular perguntas difíceis
-6. **Despacho 6**: encerramento e feedback
+   **Despacho 1 (inclui referencia_persona):**
 
-Aguarde a resposta de cada despacho antes de fazer o próximo (sem paralelização).
+   ```
+   ## DESPACHO: COACH
+   ### referencia_persona
+   [Conteúdo completo de personas/coach.md]
+
+   ### tarefa
+   Conduzir entrevista simulada para a vaga de [titulo] na empresa [empresa]
+
+   ### perfil_usuario
+   [Conteúdo de data/user-profile.md]
+
+   ### contexto
+   Vaga: [título e descrição da vaga]
+   Número da pergunta: 1
+   Histórico: nenhum (primeira pergunta)
+
+   ### saida_esperada
+   Estado, pergunta_atual e feedback_anterior (vazio para P1)
+   ```
+
+   **Despachos 2-5 (sem referencia_persona):**
+
+   ```
+   ## DESPACHO: COACH
+   ### tarefa
+   Avaliar resposta anterior e gerar próxima pergunta
+
+   ### perfil_usuario
+   [Conteúdo de data/user-profile.md]
+
+   ### contexto
+   Vaga: [título e descrição da vaga]
+   Número da pergunta: [2-5]
+   Histórico:
+     P1: [texto]
+     R1: [texto]
+     ...
+     R[N-1]: [texto da resposta do usuário]
+
+   ### saida_esperada
+   Estado, feedback_anterior (sobre R[N-1]) e pergunta_atual (P[N])
+   ```
+
+   **Despacho 6 (final, sem referencia_persona):**
+
+   ```
+   ## DESPACHO: COACH
+   ### tarefa
+   Avaliar resposta final e dar pontuação da entrevista
+
+   ### perfil_usuario
+   [Conteúdo de data/user-profile.md]
+
+   ### contexto
+   Vaga: [título e descrição da vaga]
+   Histórico completo:
+     P1: [texto]
+     R1: [texto]
+     ...
+     P5: [texto]
+     R5: [texto da resposta do usuário]
+
+   ### saida_esperada
+   Estado, pontuação final (X/10) e áreas de melhoria
+   ```
+
+10. Em cada despacho:
+    - Chame `spawn_agent`.
+    - Aguarde resposta.
+    - Exiba a pergunta/feedback ao usuário.
+    - Colete a resposta do usuário para o próximo despacho.
+11. Se `spawn_agent` falhar em qualquer despacho, informe o erro e retorne ao menu.
+12. Se o usuário desistir no meio, salve estado parcial em `data/interview-session.md` e retorne ao menu.
+13. Ao final do despacho 6, exiba pontuação e áreas de melhoria e retorne ao menu.
 
 ### Opção D — Refazer Quiz
 

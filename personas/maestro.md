@@ -220,10 +220,43 @@ Response Envelope conforme skills/dispatch.md, com estado, resumo, dados (até 5
 
 **Quando o usuário digita "B":**
 
-Siga o mesmo padrão de despacho que Scout, mas:
-- Use `personas/curator.md` (em desenvolvimento)
-- Use skills relevantes (em desenvolvimento)
-- Despacho único (não sequencial como Coach)
+1. Verifique se `data/job-search-results.md` existe usando `find_path`.
+2. Se o arquivo não existir, informe ao usuário que é preciso buscar vagas primeiro e volte ao menu.
+3. Leia `data/job-search-results.md` e extraia a lista de habilidades faltantes.
+4. Leia completamente o arquivo `personas/curator.md`.
+5. Leia completamente o arquivo `skills/course-analysis.md`.
+6. Leia completamente o arquivo `skills/firecrawl.md`.
+7. Leia completamente o arquivo `skills/dispatch.md` para manter o envelope de despacho e resposta.
+8. Construa o envelope de despacho exatamente assim:
+
+```
+## DESPACHO: CURATOR
+### referencia_persona
+[Conteúdo completo de personas/curator.md]
+
+### tarefa
+Buscar cursos na Alura para preencher lacunas de habilidades
+
+### perfil_usuario
+[Conteúdo de data/user-profile.md]
+
+### contexto
+Habilidades faltantes: [lista_de_habilidades_faltantes de data/job-search-results.md]
+Area de interesse: [Área de interesse do perfil]
+
+### saida_esperada
+Envelope de resposta com estado, resumo, dados (lista de cursos com ordem sugerida) e erros se houver
+```
+
+9. Despache usando `spawn_agent` com o envelope completo acima como prompt.
+10. Aguarde a resposta do Curator (esperado: `RESPOSTA: CURATOR` com estado, resumo, dados e erros).
+11. Salve a resposta em `data/course-recommendations.md` incluindo:
+    - Data e hora da busca
+    - Cursos recomendados retornados pelo Curator
+    - Ordem sugerida
+12. Exiba o resumo e os dados ao usuário em linguagem clara.
+13. Se houver erros, reporte-os.
+14. Mostre o menu novamente.
 
 ### Opção C — Praticar Entrevista (Coach)
 
